@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ไพ่ยิปซี — แห่งโชคชะตา</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Sarabun:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #c9a84c;
+    --gold-light: #f0d080;
+    --gold-dim: #7a6030;
+    --deep: #0a0710;
+    --purple-dark: #1a0d2e;
+    --purple-mid: #2d1550;
+    --crimson: #8b1a2e;
+    --ink: #f5ecd7;
+    --smoke: rgba(201,168,76,0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--deep);
+    color: var(--ink);
+    font-family: 'Sarabun', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    cursor: default;
+  }
+
+  /* Stars background */
+  .stars {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .star {
+    position: absolute;
+    border-radius: 50%;
+    background: white;
+    animation: twinkle var(--dur) ease-in-out infinite alternate;
+  }
+  @keyframes twinkle {
+    from { opacity: var(--min-op); transform: scale(1); }
+    to { opacity: var(--max-op); transform: scale(1.4); }
+  }
+
+  /* Nebula glow */
+  .nebula {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 60% 40% at 20% 30%, rgba(80,20,120,0.35) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 60% at 80% 70%, rgba(139,26,46,0.2) 0%, transparent 70%),
+      radial-gradient(ellipse 70% 50% at 50% 50%, rgba(26,13,46,0.8) 0%, transparent 100%);
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+    text-align: center;
+  }
+
+  /* Header */
+  .header-ornament {
+    font-size: 1.4rem;
+    color: var(--gold);
+    letter-spacing: 0.5em;
+    opacity: 0.7;
+    margin-bottom: 8px;
+  }
+
+  h1 {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(1.6rem, 5vw, 3rem);
+    color: var(--gold-light);
+    text-shadow: 0 0 40px rgba(201,168,76,0.5), 0 0 80px rgba(201,168,76,0.2);
+    letter-spacing: 0.1em;
+    line-height: 1.3;
+    margin-bottom: 6px;
+  }
+
+  .subtitle {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.1rem;
+    color: rgba(245,236,215,0.55);
+    letter-spacing: 0.15em;
+    margin-bottom: 40px;
+  }
+
+  /* Divider */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 24px auto;
+    max-width: 340px;
+  }
+  .divider-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold-dim), transparent);
+  }
+  .divider-gem {
+    width: 8px; height: 8px;
+    background: var(--gold);
+    transform: rotate(45deg);
+    box-shadow: 0 0 10px var(--gold);
+  }
+
+  /* Instruction */
+  .instruction {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05rem;
+    color: rgba(245,236,215,0.7);
+    margin-bottom: 36px;
+    line-height: 1.8;
+  }
+
+  /* Draw button */
+  .draw-btn {
+    position: relative;
+    background: none;
+    border: 1px solid var(--gold-dim);
+    color: var(--gold-light);
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.2em;
+    padding: 16px 44px;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    overflow: hidden;
+    margin-bottom: 56px;
+  }
+  .draw-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent 30%, rgba(201,168,76,0.08) 50%, transparent 70%);
+    transform: translateX(-100%);
+    transition: transform 0.6s ease;
+  }
+  .draw-btn:hover::before { transform: translateX(100%); }
+  .draw-btn:hover {
+    border-color: var(--gold);
+    color: var(--gold-light);
+    box-shadow: 0 0 30px rgba(201,168,76,0.2), inset 0 0 20px rgba(201,168,76,0.05);
+    text-shadow: 0 0 15px rgba(201,168,76,0.5);
+  }
+  .draw-btn:active { transform: scale(0.97); }
+  .draw-btn.loading { pointer-events: none; opacity: 0.7; }
+
+  /* Cards area */
+  .cards-area {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-bottom: 48px;
+    min-height: 280px;
+    align-items: center;
+  }
+
+  /* Card */
+  .card-wrapper {
+    perspective: 1000px;
+    animation: cardReveal 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  .card-wrapper:nth-child(1) { animation-delay: 0.0s; }
+  .card-wrapper:nth-child(2) { animation-delay: 0.15s; }
+  .card-wrapper:nth-child(3) { animation-delay: 0.3s; }
+
+  @keyframes cardReveal {
+    from { opacity: 0; transform: translateY(40px) rotateX(20deg) scale(0.85); }
+    to { opacity: 1; transform: translateY(0) rotateX(0deg) scale(1); }
+  }
+
+  .card {
+    width: 160px;
+    border: 1px solid var(--gold-dim);
+    background: linear-gradient(160deg, #1a0d2e 0%, #0d0820 50%, #1a0d2e 100%);
+    padding: 20px 16px;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border: 1px solid rgba(201,168,76,0.15);
+    pointer-events: none;
+  }
+  .card::after {
+    content: '';
+    position: absolute;
+    top: -1px; left: -1px; right: -1px; bottom: -1px;
+    background: linear-gradient(135deg, rgba(201,168,76,0.3), transparent 40%, transparent 60%, rgba(201,168,76,0.1));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+  .card:hover { transform: translateY(-8px) scale(1.03); box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 30px rgba(201,168,76,0.1); }
+  .card:hover::after { opacity: 1; }
+
+  .card-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    font-family: 'Cormorant Garamond', serif;
+  }
+
+  .card-symbol {
+    font-size: 3rem;
+    margin-bottom: 12px;
+    display: block;
+    filter: drop-shadow(0 0 12px rgba(201,168,76,0.4));
+  }
+
+  .card-name {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 0.6rem;
+    color: var(--gold-light);
+    letter-spacing: 0.1em;
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+
+  .card-number {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.75rem;
+    color: var(--gold-dim);
+    margin-bottom: 14px;
+  }
+
+  .card-divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold-dim), transparent);
+    margin: 10px 0;
+  }
+
+  .card-meaning {
+    font-size: 0.78rem;
+    color: rgba(245,236,215,0.75);
+    line-height: 1.6;
+    font-family: 'Sarabun', sans-serif;
+  }
+
+  .card-reversed {
+    font-size: 0.65rem;
+    color: var(--crimson);
+    letter-spacing: 0.1em;
+    margin-top: 8px;
+  }
+
+  /* Position labels */
+  .position-labels {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+  }
+  .pos-label {
+    width: 160px;
+    text-align: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 0.85rem;
+    color: rgba(245,236,215,0.4);
+    letter-spacing: 0.05em;
+  }
+
+  /* Reading result */
+  .reading-box {
+    border: 1px solid var(--gold-dim);
+    background: linear-gradient(160deg, rgba(26,13,46,0.8), rgba(10,7,16,0.9));
+    padding: 32px;
+    position: relative;
+    animation: fadeInUp 0.8s ease 0.6s both;
+    max-width: 680px;
+    margin: 0 auto;
+  }
+  .reading-box::before {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    border: 1px solid rgba(201,168,76,0.1);
+    pointer-events: none;
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .reading-title {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 0.75rem;
+    color: var(--gold);
+    letter-spacing: 0.3em;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+  }
+
+  .reading-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    line-height: 1.9;
+    color: rgba(245,236,215,0.85);
+    font-weight: 300;
+  }
+
+  .corner-ornament {
+    position: absolute;
+    width: 20px; height: 20px;
+    border-color: var(--gold-dim);
+    border-style: solid;
+    opacity: 0.5;
+  }
+  .corner-ornament.tl { top: 12px; left: 12px; border-width: 1px 0 0 1px; }
+  .corner-ornament.tr { top: 12px; right: 12px; border-width: 1px 1px 0 0; }
+  .corner-ornament.bl { bottom: 12px; left: 12px; border-width: 0 0 1px 1px; }
+  .corner-ornament.br { bottom: 12px; right: 12px; border-width: 0 1px 1px 0; }
+
+  /* Loading spinner */
+  .spinner {
+    display: none;
+    margin: 0 auto 32px;
+    width: 50px; height: 50px;
+    border: 1px solid var(--gold-dim);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  .spinner.show { display: block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Empty state */
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 40px;
+    opacity: 0.4;
+    transition: opacity 0.3s;
+  }
+  .empty-symbol { font-size: 3rem; }
+  .empty-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--gold-dim);
+  }
+
+  .history-section {
+    margin-top: 60px;
+    text-align: left;
+  }
+  .history-title {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.3em;
+    color: var(--gold-dim);
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .history-item {
+    border-bottom: 1px solid rgba(201,168,76,0.08);
+    padding: 12px 0;
+    font-size: 0.8rem;
+    color: rgba(245,236,215,0.4);
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+  }
+  .history-time { color: var(--gold-dim); font-family: 'Cormorant Garamond', serif; font-style: italic; white-space: nowrap; }
+  .history-cards { flex: 1; }
+
+  .footer-text {
+    margin-top: 60px;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 0.85rem;
+    color: rgba(245,236,215,0.2);
+    letter-spacing: 0.08em;
+  }
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+<div class="nebula"></div>
+
+<div class="container">
+  <div class="header-ornament">✦ ✦ ✦</div>
+  <h1>ไพ่ยิปซี<br>แห่งโชคชะตา</h1>
+  <p class="subtitle">Romani Oracle · สำรวจชะตากรรมของเธอ</p>
+
+  <div class="divider"><div class="divider-line"></div><div class="divider-gem"></div><div class="divider-line"></div></div>
+
+  <p class="instruction">
+    ปล่อยใจให้ว่างเปล่า หายใจลึกๆ แล้วคลิก<br>
+    เพื่อเปิดไพ่สามใบแห่งอดีต ปัจจุบัน และอนาคต
+  </p>
+
+  <button class="draw-btn" id="drawBtn" onclick="drawCards()">
+    ✦ &nbsp; จั่วไพ่ชะตา &nbsp; ✦
+  </button>
+
+  <div class="spinner" id="spinner"></div>
+  <div class="cards-area" id="cardsArea">
+    <div class="empty-state" id="emptyState">
+      <span class="empty-symbol">🔮</span>
+      <span class="empty-text">ไพ่กำลังรอเธออยู่…</span>
+    </div>
+  </div>
+
+  <div class="position-labels" id="posLabels" style="display:none;">
+    <div class="pos-label">อดีต · Past</div>
+    <div class="pos-label">ปัจจุบัน · Present</div>
+    <div class="pos-label">อนาคต · Future</div>
+  </div>
+
+  <div id="readingContainer"></div>
+
+  <div class="history-section" id="historySection" style="display:none;">
+    <p class="history-title">✦ ประวัติการดูดวง ✦</p>
+    <div id="historyList"></div>
+  </div>
+
+  <p class="footer-text">ไพ่บอกเส้นทาง — แต่เธอคือผู้เลือกก้าว</p>
+</div>
+
+<script>
+// Generate stars
+const starsEl = document.getElementById('stars');
+for (let i = 0; i < 180; i++) {
+  const s = document.createElement('div');
+  s.className = 'star';
+  const size = Math.random() * 2.5 + 0.5;
+  s.style.cssText = `
+    width:${size}px; height:${size}px;
+    left:${Math.random()*100}%;
+    top:${Math.random()*100}%;
+    --dur:${2+Math.random()*4}s;
+    --min-op:${0.1+Math.random()*0.2};
+    --max-op:${0.5+Math.random()*0.5};
+    animation-delay:${Math.random()*5}s;
+  `;
+  starsEl.appendChild(s);
+}
+
+const TAROT_DECK = [
+  { name: "THE FOOL", nameTh: "นักเดินทาง", number: "0", symbol: "🌟", meaning: "จุดเริ่มต้นใหม่ ความกล้าหาญ การผจญภัย และจิตใจที่เปิดกว้าง", reversed: "ความประมาท ขาดทิศทาง" },
+  { name: "THE MAGICIAN", nameTh: "นักมายากล", number: "I", symbol: "⚡", meaning: "พลังเจตจำนง ความสามารถ และการนำทักษะมาใช้อย่างเต็มที่", reversed: "การหลอกลวง พลังงานกระจาย" },
+  { name: "THE HIGH PRIESTESS", nameTh: "นักบวชหญิง", number: "II", symbol: "🌙", meaning: "ปัญญาในตน ความลึกลับ การฟังเสียงภายใน และสัญชาตญาณ", reversed: "ความลับ สัญชาตญาณถูกละเลย" },
+  { name: "THE EMPRESS", nameTh: "จักรพรรดินี", number: "III", symbol: "🌸", meaning: "ความอุดมสมบูรณ์ ความงาม ธรรมชาติ และพลังความรัก", reversed: "การพึ่งพา ความสร้างสรรค์ถดถอย" },
+  { name: "THE EMPEROR", nameTh: "จักรพรรดิ", number: "IV", symbol: "👑", meaning: "อำนาจ โครงสร้าง ความมั่นคง และความเป็นผู้นำที่แข็งแกร่ง", reversed: "เผด็จการ ขาดวินัย" },
+  { name: "THE HIEROPHANT", nameTh: "บาทหลวง", number: "V", symbol: "⛪", meaning: "ประเพณี ความเชื่อ การชี้นำ และปัญญาจากบรรพบุรุษ", reversed: "กบฏ ทำลายกฎเก่า" },
+  { name: "THE LOVERS", nameTh: "คู่รัก", number: "VI", symbol: "💞", meaning: "ความรัก ความสัมพันธ์ การเลือก และการผสานสองสิ่งเป็นหนึ่ง", reversed: "ความไม่สมดุล ขาดความสอดคล้อง" },
+  { name: "THE CHARIOT", nameTh: "รถศึก", number: "VII", symbol: "🏆", meaning: "ชัยชนะ ความมุ่งมั่น การควบคุมตน และการฟันฝ่าอุปสรรค", reversed: "สูญเสียการควบคุม ทิศทางหลงเหลือ" },
+  { name: "STRENGTH", nameTh: "พลัง", number: "VIII", symbol: "🦁", meaning: "ความกล้า ความอดทน พลังจากภายใน และการเอาชนะความกลัว", reversed: "สงสัยในตนเอง ขาดความมั่นใจ" },
+  { name: "THE HERMIT", nameTh: "นักพรต", number: "IX", symbol: "🕯️", meaning: "การพักผ่อนวิเวก การใคร่ครวญ ปัญญาภายใน และการค้นพบตัวเอง", reversed: "โดดเดี่ยวเกินไป ปิดกั้นตนเอง" },
+  { name: "WHEEL OF FORTUNE", nameTh: "วงล้อโชคชะตา", number: "X", symbol: "☸️", meaning: "โชคชะตา วัฏจักร การเปลี่ยนแปลง และโอกาสที่หมุนเวียนมา", reversed: "โชคร้าย ต่อต้านการเปลี่ยนแปลง" },
+  { name: "JUSTICE", nameTh: "ความยุติธรรม", number: "XI", symbol: "⚖️", meaning: "ความเป็นธรรม ความซื่อสัตย์ ความสมดุล และผลที่ตามมาจากการกระทำ", reversed: "ไม่ยุติธรรม หลีกเลี่ยงผลกรรม" },
+  { name: "THE HANGED MAN", nameTh: "ชายถูกแขวน", number: "XII", symbol: "🙃", meaning: "การรอคอย มุมมองใหม่ การยอมรับ และปล่อยวางสิ่งที่ยึดติด", reversed: "ล่าช้า เสียสละโดยเปล่าประโยชน์" },
+  { name: "DEATH", nameTh: "มฤตยู", number: "XIII", symbol: "🌑", meaning: "การสิ้นสุดและเริ่มต้นใหม่ การเปลี่ยนแปลงครั้งใหญ่ และการปลดปล่อย", reversed: "ต่อต้านการเปลี่ยนแปลง ยึดติดกับอดีต" },
+  { name: "TEMPERANCE", nameTh: "ความพอดี", number: "XIV", symbol: "🌊", meaning: "ความสมดุล ความอดทน การผสมผสาน และการหาจุดกึ่งกลาง", reversed: "ขาดความสมดุล สุดโต่ง" },
+  { name: "THE DEVIL", nameTh: "ซาตาน", number: "XV", symbol: "🔗", meaning: "การยึดติด วัตถุนิยม แรงปรารถนา และสิ่งที่พันธนาการจิตใจ", reversed: "ปลดปล่อยตนเอง หลุดจากพันธนาการ" },
+  { name: "THE TOWER", nameTh: "หอคอย", number: "XVI", symbol: "⚡", meaning: "การพังทลายกะทันหัน การเปลี่ยนแปลงที่หลีกเลี่ยงไม่ได้ และการตื่นรู้", reversed: "หลีกเลี่ยงความหายนะ เตือนล่วงหน้า" },
+  { name: "THE STAR", nameTh: "ดาว", number: "XVII", symbol: "⭐", meaning: "ความหวัง แรงบันดาลใจ ความสงบ และแสงสว่างหลังความมืด", reversed: "สิ้นหวัง ความเชื่อสั่นคลอน" },
+  { name: "THE MOON", nameTh: "พระจันทร์", number: "XVIII", symbol: "🌕", meaning: "ความลึกลับ ความสับสน ความกลัวที่ซ่อนอยู่ และพลังจิตใต้สำนึก", reversed: "ความลับถูกเปิดเผย ความกลัวหาย" },
+  { name: "THE SUN", nameTh: "พระอาทิตย์", number: "XIX", symbol: "☀️", meaning: "ความสุข ความสำเร็จ พลังบวก และความชัดเจนในชีวิต", reversed: "มองโลกในแง่ดีเกินไป ล้มเหลวชั่วคราว" },
+  { name: "JUDGEMENT", nameTh: "การพิพากษา", number: "XX", symbol: "🎺", meaning: "การฟื้นคืน การปลุกจิตสำนึก โอกาสใหม่ และการตัดสินครั้งสำคัญ", reversed: "สงสัยในตนเอง กลัวการตัดสิน" },
+  { name: "THE WORLD", nameTh: "โลก", number: "XXI", symbol: "🌍", meaning: "ความสมบูรณ์ ความสำเร็จสูงสุด วัฏจักรจบสิ้น และความกลมกลืน", reversed: "ยังไม่สมบูรณ์ ขาดการปิดฉาก" },
+  { name: "ACE OF CUPS", nameTh: "เอซแห่งถ้วย", number: "Cups I", symbol: "🏺", meaning: "ความรัก อารมณ์ความรู้สึก ความสัมพันธ์ใหม่ และความสุขจากใจ", reversed: "บล็อคทางอารมณ์ รักไม่สมหวัง" },
+  { name: "ACE OF SWORDS", nameTh: "เอซแห่งดาบ", number: "Swords I", symbol: "⚔️", meaning: "ความชัดเจน ความจริง ความคิดทะลุปรุโปร่ง และการตัดสินใจเด็ดขาด", reversed: "ความสับสน ข้อมูลบิดเบือน" },
+  { name: "ACE OF WANDS", nameTh: "เอซแห่งไม้เท้า", number: "Wands I", symbol: "🔥", meaning: "ไฟแห่งการสร้าง พลังงานใหม่ แรงบันดาลใจ และจุดเริ่มต้นอันยิ่งใหญ่", reversed: "หมดแรงบันดาลใจ ความล่าช้า" },
+  { name: "ACE OF PENTACLES", nameTh: "เอซแห่งเหรียญ", number: "Pentacles I", symbol: "💰", meaning: "โอกาสทางการเงิน ความมั่งคั่ง ความมั่นคง และก้าวแรกสู่ความสำเร็จ", reversed: "เสียโอกาส การเงินไม่แน่นอน" },
+  { name: "QUEEN OF CUPS", nameTh: "ราชินีถ้วย", number: "Cups XII", symbol: "💧", meaning: "ความเห็นอกเห็นใจ ความอ่อนโยน ปัญญาทางอารมณ์ และพลังการดูแล", reversed: "อารมณ์แปรปรวน สูญเสียตัวเอง" },
+  { name: "KING OF SWORDS", nameTh: "ราชาดาบ", number: "Swords XIV", symbol: "🗡️", meaning: "ปัญญา อำนาจ ความยุติธรรม และความสามารถในการตัดสินใจอย่างชัดเจน", reversed: "เผด็จการทางความคิด ใช้อำนาจในทางที่ผิด" },
+  { name: "PAGE OF WANDS", nameTh: "เพจแห่งไม้เท้า", number: "Wands XI", symbol: "✨", meaning: "พลังงานสูง ความกระตือรือร้น ข่าวดี และจุดประกายความคิดสร้างสรรค์", reversed: "หุนหันพลันแล่น ขาดทิศทาง" },
+  { name: "TEN OF PENTACLES", nameTh: "สิบแห่งเหรียญ", number: "Pentacles X", symbol: "🏡", meaning: "ความมั่นคงระยะยาว มรดก ครอบครัว และความสำเร็จที่ยั่งยืน", reversed: "ขัดแย้งในครอบครัว สูญเสียสมบัติ" },
+  { name: "SEVEN OF CUPS", nameTh: "เจ็ดแห่งถ้วย", number: "Cups VII", symbol: "🌈", meaning: "จินตนาการ ทางเลือกมากมาย ความฝัน และการเผชิญความเป็นจริง", reversed: "ตัดสินใจ มุ่งเน้นได้แล้ว" },
+  { name: "THREE OF SWORDS", nameTh: "สามแห่งดาบ", number: "Swords III", symbol: "💔", meaning: "ความเจ็บปวด การสูญเสีย ความเศร้า และบทเรียนสำคัญแห่งใจ", reversed: "ฟื้นฟู ปล่อยวางความเจ็บปวด" },
+  { name: "SIX OF WANDS", nameTh: "หกแห่งไม้เท้า", number: "Wands VI", symbol: "🎖️", meaning: "ชัยชนะ การยอมรับ ความสำเร็จ และการได้รับเกียรติจากสิ่งที่ทำ", reversed: "ล้มเหลว ขาดการยอมรับ" },
+];
+
+const positions = ["อดีต", "ปัจจุบัน", "อนาคต"];
+const positionsEn = ["Past", "Present", "Future"];
+let history = [];
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function drawCards() {
+  const btn = document.getElementById('drawBtn');
+  const spinner = document.getElementById('spinner');
+  const cardsArea = document.getElementById('cardsArea');
+  const emptyState = document.getElementById('emptyState');
+  const posLabels = document.getElementById('posLabels');
+  const readingContainer = document.getElementById('readingContainer');
+
+  btn.classList.add('loading');
+  btn.textContent = '✦  กำลังดึงพลังจักรวาล  ✦';
+  spinner.classList.add('show');
+  cardsArea.innerHTML = '';
+  posLabels.style.display = 'none';
+  readingContainer.innerHTML = '';
+
+  setTimeout(() => {
+    const drawn = shuffle(TAROT_DECK).slice(0, 3).map(c => ({
+      ...c,
+      isReversed: Math.random() < 0.25
+    }));
+
+    spinner.classList.remove('show');
+    posLabels.style.display = 'flex';
+
+    drawn.forEach((card, i) => {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'card-wrapper';
+
+      const meaning = card.isReversed ? card.reversed : card.meaning;
+
+      wrapper.innerHTML = `
+        <div class="card" style="transform: ${card.isReversed ? 'rotate(180deg)' : 'none'}">
+          <div class="card-label" style="transform: ${card.isReversed ? 'rotate(180deg)' : 'none'}">
+            ${positions[i]} · ${positionsEn[i]}${card.isReversed ? ' · กลับหัว' : ''}
+          </div>
+          <span class="card-symbol" style="transform: ${card.isReversed ? 'rotate(180deg) scaleX(-1)' : 'none'}; display: block;">${card.symbol}</span>
+          <div class="card-name" style="transform: ${card.isReversed ? 'rotate(180deg)' : 'none'}">${card.name}</div>
+          <div class="card-number" style="transform: ${card.isReversed ? 'rotate(180deg)' : 'none'}">${card.nameTh} · ${card.number}</div>
+          <div class="card-divider" style="transform: ${card.isReversed ? 'rotate(180deg)' : 'none'}"></div>
+          <div class="card-meaning" style="transform: ${card.isReversed ? 'rotate(180deg)' : 'none'}">${meaning}</div>
+          ${card.isReversed ? `<div class="card-reversed" style="transform: rotate(180deg);">↕ ไพ่กลับหัว</div>` : ''}
+        </div>
+      `;
+      cardsArea.appendChild(wrapper);
+    });
+
+    // Reading summary
+    readingContainer.innerHTML = `
+      <div class="reading-box">
+        <div class="corner-ornament tl"></div>
+        <div class="corner-ornament tr"></div>
+        <div class="corner-ornament bl"></div>
+        <div class="corner-ornament br"></div>
+        <p class="reading-title">✦ &nbsp; คำทำนายแห่งวันนี้ &nbsp; ✦</p>
+        <p class="reading-text">${generateReading(drawn)}</p>
+      </div>
+    `;
+
+    // Add to history
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+    history.unshift({ time: timeStr, cards: drawn.map(c => c.nameTh).join(' · ') });
+    if (history.length > 5) history.pop();
+    renderHistory();
+
+    btn.classList.remove('loading');
+    btn.textContent = '✦   จั่วไพ่ใหม่   ✦';
+  }, 1800);
+}
+
+function generateReading(cards) {
+  const past = cards[0], present = cards[1], future = cards[2];
+  const readings = [
+    `ในอดีตของเธอ <em>${past.nameTh}</em> ได้วางรากฐานแห่ง${past.isReversed ? 'ความท้าทาย' : 'ประสบการณ์'} — ${past.meaning.split(' ').slice(0,4).join(' ')} ปัจจุบันนี้ <em>${present.nameTh}</em> กำลังนำพาพลังแห่ง${present.meaning.split(' ').slice(0,3).join(' ')} เข้ามาในชีวิต และขอบฟ้าแห่งอนาคตชี้ไปยัง <em>${future.nameTh}</em> ซึ่งเปิดประตูสู่${future.isReversed ? 'บทเรียนใหม่' : 'โอกาสอันงดงาม'}`,
+
+    `เส้นทางชีวิตเธอเริ่มต้นด้วย <em>${past.nameTh}</em> — พลังแห่ง${past.meaning.split('และ')[0].trim()} ที่หล่อหลอมให้เธอเป็นผู้ที่แข็งแกร่ง บัดนี้ <em>${present.nameTh}</em> ยืนอยู่ตรงหน้า นำพาสัญญาณของ${present.meaning.split(' ').slice(0,5).join(' ')} สำหรับอนาคต ดาวชี้ทางไปยัง <em>${future.nameTh}</em> — จงเปิดใจรับ${future.meaning.split(' ').slice(0,4).join(' ')}`,
+
+    `จักรวาลกระซิบว่า อดีตแห่ง <em>${past.nameTh}</em> ได้สอนบทเรียนสำคัญแก่เธอ บัดนี้ใน ณ ขณะปัจจุบัน <em>${present.nameTh}</em> นำพาพลัง${present.meaning.split(' ').slice(0,3).join(' ')} และเมื่อก้าวสู่อนาคต <em>${future.nameTh}</em> จะเป็นแสงนำทางแห่ง${future.isReversed ? 'การเรียนรู้' : 'ความสำเร็จ'}ที่รอเธออยู่`
+  ];
+  return readings[Math.floor(Math.random() * readings.length)];
+}
+
+function renderHistory() {
+  const section = document.getElementById('historySection');
+  const list = document.getElementById('historyList');
+  if (history.length === 0) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  list.innerHTML = history.map(h => `
+    <div class="history-item">
+      <span class="history-time">${h.time}</span>
+      <span class="history-cards">${h.cards}</span>
+    </div>
+  `).join('');
+}
+</script>
+</body>
+</html>
